@@ -1,0 +1,273 @@
+# LeetCode SQL Solutions
+
+## 1757. Recyclable and Low Fat Products
+
+### Solution
+
+```sql
+SELECT product_id
+FROM Products
+WHERE low_fats = 'Y'
+  AND recyclable = 'Y';
+```
+
+**Concepts:** WHERE, AND
+
+---
+
+## 584. Find Customer Referee
+
+### Solution
+
+```sql
+SELECT name
+FROM Customer
+WHERE referee_id <> 2
+   OR referee_id IS NULL;
+```
+
+**Concepts:** NULL Handling, WHERE, OR
+
+---
+
+## 595. Big Countries
+
+### Solution
+
+```sql
+SELECT name,
+       population,
+       area
+FROM World
+WHERE area >= 3000000
+   OR population >= 25000000;
+```
+
+**Concepts:** Filtering, OR
+
+---
+
+## 1148. Article Views I
+
+### Solution
+
+```sql
+SELECT DISTINCT author_id AS id
+FROM Views
+WHERE author_id = viewer_id
+ORDER BY id;
+```
+
+**Concepts:** DISTINCT, ORDER BY
+
+---
+
+## 1683. Invalid Tweets
+
+### Solution
+
+```sql
+SELECT tweet_id
+FROM Tweets
+WHERE LENGTH(content) > 15;
+```
+
+**Concepts:** String Functions, Filtering
+
+---
+
+## 1378. Replace Employee ID With The Unique Identifier
+
+### Solution
+
+```sql
+SELECT eu.unique_id,
+       e.name
+FROM Employees e
+LEFT JOIN EmployeeUNI eu
+       ON e.id = eu.id;
+```
+
+**Concepts:** LEFT JOIN
+
+---
+
+## 1068. Product Sales Analysis I
+
+### Solution
+
+```sql
+SELECT p.product_name,
+       s.year,
+       s.price
+FROM Sales s
+INNER JOIN Product p
+        ON s.product_id = p.product_id;
+```
+
+**Concepts:** INNER JOIN
+
+---
+
+## 1581. Customer Who Visited but Did Not Make Any Transactions
+
+### Solution
+
+```sql
+SELECT customer_id,
+       COUNT(customer_id) AS count_no_trans
+FROM Visits
+WHERE visit_id NOT IN (
+    SELECT visit_id
+    FROM Transactions
+)
+GROUP BY customer_id;
+```
+
+**Concepts:** Subquery, GROUP BY, COUNT
+
+---
+
+## 197. Rising Temperature
+
+### Solution
+
+```sql
+SELECT id
+FROM (
+    SELECT id,
+           recordDate,
+           temperature,
+           LAG(recordDate) OVER (ORDER BY recordDate) AS prev_date,
+           LAG(temperature) OVER (ORDER BY recordDate) AS prev_temp
+    FROM Weather
+) AS w
+WHERE temperature > prev_temp
+  AND DATEDIFF(recordDate, prev_date) = 1;
+```
+
+**Concepts:** Window Functions, LAG(), Date Functions
+
+---
+
+## 1661. Average Time of Process per Machine
+
+### Solution
+
+```sql
+SELECT machine_id,
+       ROUND(AVG(processing_time), 3) AS processing_time
+FROM (
+    SELECT a.machine_id,
+           a.process_id,
+           ROUND(b.timestamp - a.timestamp, 3) AS processing_time
+    FROM Activity a
+    JOIN Activity b
+      ON a.machine_id = b.machine_id
+     AND a.process_id = b.process_id
+    WHERE a.activity_type = 'start'
+      AND b.activity_type = 'end'
+) t
+GROUP BY machine_id;
+```
+
+**Concepts:** Self Join, Aggregation, AVG
+
+---
+
+## 577. Employee Bonus
+
+### Solution
+
+```sql
+SELECT e.name,
+       b.bonus
+FROM Employee e
+LEFT JOIN Bonus b
+       ON e.empId = b.empId
+WHERE b.bonus < 1000
+   OR b.bonus IS NULL;
+```
+
+**Concepts:** LEFT JOIN, NULL Handling
+
+---
+
+## 1280. Students and Examinations
+
+### Solution
+
+```sql
+SELECT p.student_id,
+       s.student_name,
+       p.subject_name,
+       p.number AS attended_exams
+FROM (
+    SELECT *
+    FROM (
+        SELECT student_id,
+               subject_name,
+               COUNT(*) AS number
+        FROM Examinations
+        GROUP BY student_id, subject_name
+
+        UNION
+
+        SELECT st.student_id,
+               su.subject_name,
+               0 AS count
+        FROM Students st
+        CROSS JOIN Subjects su
+    ) t
+    GROUP BY student_id, subject_name
+) p
+LEFT JOIN Students s
+       ON s.student_id = p.student_id
+ORDER BY p.student_id,
+         p.subject_name;
+```
+
+**Concepts:** CROSS JOIN, UNION, GROUP BY
+
+---
+
+## 570. Managers with at Least 5 Direct Reports
+
+### Solution
+
+```sql
+SELECT name
+FROM Employee
+WHERE id IN (
+    SELECT managerId
+    FROM Employee
+    GROUP BY managerId
+    HAVING COUNT(managerId) >= 5
+);
+```
+
+**Concepts:** Subquery, HAVING, GROUP BY
+
+---
+
+## 1934. Confirmation Rate
+
+### Solution
+
+```sql
+SELECT s.user_id,
+       ROUND(
+           COUNT(
+               CASE
+                   WHEN action = 'confirmed' THEN 1
+               END
+           ) / COUNT(*),
+           2
+       ) AS confirmation_rate
+FROM Signups s
+LEFT JOIN Confirmations c
+       ON s.user_id = c.user_id
+GROUP BY s.user_id;
+```
+
+**Concepts:** CASE WHEN, Aggregation, LEFT JOIN
